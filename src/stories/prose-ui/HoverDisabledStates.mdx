@@ -1,0 +1,583 @@
+import { Meta, Canvas, Story, Source } from '@storybook/addon-docs/blocks';
+import { useState } from 'react';
+
+<Meta title="Prose UI/Hover & Disabled State Colors" />
+
+# Hover and Disabled State Colors
+
+<div style={{ 
+  padding: '24px', 
+  background: 'white',
+  borderRadius: '12px',
+  border: '1px solid #e0e0e0',
+  color: '#333',
+  marginBottom: '32px'
+}}>
+  <h2 style={{ margin: '0 0 12px 0', color: '#1a1a1a' }}>Overview</h2>
+  <p style={{ margin: 0, lineHeight: '1.6' }}>
+    A systematic approach to computing hover and disabled colors that ensures consistency
+    across your design system. This guide covers the color blending formula, implementation
+    patterns, and interactive examples for both designers and developers.
+  </p>
+</div>
+
+---
+
+## 🎨 The Hover Color System
+
+The hover color system uses a **weight-based blending formula** that automatically computes hover states by mixing colors from your palette.
+
+### Core Principle
+
+> **Hover colors are computed by blending the active color with an adjacent color in the palette based on the color's weight.**
+
+---
+
+## 📐 The Blending Formula
+
+The system follows these rules based on color weight:
+
+<div style={{ display: 'grid', gap: '16px', marginTop: '24px', marginBottom: '32px' }}>
+  <div style={{ 
+    padding: '20px', 
+    background: '#f0f7ff', 
+    borderLeft: '4px solid #4485F1',
+    borderRadius: '8px'
+  }}>
+    <strong style={{ color: '#285195' }}>Weight &lt; 700</strong>
+    <p style={{ margin: '8px 0 0 0', color: '#333' }}>
+      50/50 mix between the <strong>active color</strong> and the <strong>next color</strong> in the palette
+    </p>
+  </div>
+  
+  <div style={{ 
+    padding: '20px', 
+    background: '#fff4e6', 
+    borderLeft: '4px solid #FFBB38',
+    borderRadius: '8px'
+  }}>
+    <strong style={{ color: '#664B16' }}>Weight ≥ 700 and &lt; 900</strong>
+    <p style={{ margin: '8px 0 0 0', color: '#333' }}>
+      50/50 mix between the <strong>active color</strong> and the <strong>previous color</strong> in the palette
+    </p>
+  </div>
+  
+  <div style={{ 
+    padding: '20px', 
+    background: '#f3e5f5', 
+    borderLeft: '4px solid #8720C4',
+    borderRadius: '8px'
+  }}>
+    <strong style={{ color: '#471167' }}>Weight ≥ 900</strong>
+    <p style={{ margin: '8px 0 0 0', color: '#333' }}>
+      <strong>No mix</strong> — Use the <strong>previous color</strong> from the palette
+    </p>
+  </div>
+</div>
+
+---
+
+## 🔍 Special Cases
+
+### Black Color
+
+<div style={{ padding: '20px', background: '#fafafa', borderRadius: '8px', marginBottom: '16px' }}>
+  <strong>If there is NO weight 900+</strong>
+  <p style={{ marginTop: '8px' }}>50/50 mix between the last two colors of the palette</p>
+</div>
+
+<div style={{ padding: '20px', background: '#fafafa', borderRadius: '8px', marginBottom: '24px' }}>
+  <strong>If there IS weight 900+</strong>
+  <p style={{ marginTop: '8px' }}>Use the first color below weight 900</p>
+</div>
+
+### White or Transparent
+
+<div style={{ padding: '20px', background: '#fafafa', borderRadius: '8px', marginBottom: '24px' }}>
+  <strong>No initial color</strong>
+  <p style={{ marginTop: '8px' }}>50/50 mix between the first two colors of the palette</p>
+</div>
+
+### Multiple Superposed Hover States
+
+When multiple elements with the same color are stacked (e.g., card → row → icon):
+
+1. **First element** → Default hover color
+2. **Second element** → Next hover color from palette
+3. **Third element** → Next hover color from palette
+4. And so on...
+
+---
+
+## 🎪 Interactive Palette Demonstrations
+
+export const ColorPalette = ({ name, colors }) => {
+  const [hoveredWeight, setHoveredWeight] = useState(null);
+  const weights = Object.keys(colors).sort((a, b) => Number(a) - Number(b));
+  const computeHoverColor = (weight) => {
+    const idx = weights.indexOf(weight);
+    const numWeight = Number(weight);
+    if (numWeight < 700) {
+      return idx < weights.length - 1 ? colors[weights[idx + 1]] : colors[weight];
+    } else if (numWeight >= 900) {
+      return idx > 0 ? colors[weights[idx - 1]] : colors[weight];
+    } else {
+      return idx > 0 ? colors[weights[idx - 1]] : colors[weight];
+    }
+  };
+  return (
+    <div style={{ marginBottom: '32px' }}>
+      <h4 style={{ marginBottom: '16px' }}>{name}</h4>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {weights.map((weight) => {
+          const isHovered = hoveredWeight === weight;
+          const hoverColor = computeHoverColor(weight);
+          return (
+            <div
+              key={weight}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <div
+                onMouseEnter={() => setHoveredWeight(weight)}
+                onMouseLeave={() => setHoveredWeight(null)}
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  backgroundColor: isHovered ? hoverColor : colors[weight],
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
+                  border: isHovered ? '2px solid #4485F1' : '2px solid #e0e0e0',
+                  boxShadow: isHovered ? '0 4px 12px rgba(0,0,0,0.15)' : '0 2px 4px rgba(0,0,0,0.1)',
+                }}
+              />
+              <div style={{ textAlign: 'center', fontSize: '12px' }}>
+                <div style={{ fontWeight: 'bold' }}>{weight}</div>
+                <div style={{ fontSize: '10px', color: '#666' }}>{colors[weight]}</div>
+                <div style={{ fontSize: '10px', color: isHovered ? '#4485F1' : 'transparent', marginTop: '4px', height: '14px' }}>
+                  Hover: {hoverColor}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+### Primary Palette
+
+<ColorPalette
+  name="Primary Colors"
+  colors={{
+    '100': '#EAEEF3',
+    '200': '#C9D7ED',
+    '300': '#98B8EE',
+    '400': '#72A1F1',
+    '500': '#4485F1',
+    '600': '#396FC8',
+    '700': '#285195',
+    '800': '#18315C',
+  }}
+/>
+
+### Grey Palette
+
+<ColorPalette
+  name="Grey Colors"
+  colors={{
+    '100': '#F6F6F6',
+    '200': '#EEEEEE',
+    '300': '#E4E4E4',
+    '400': '#D2D2D2',
+    '500': '#B8B8B8',
+    '600': '#909090',
+    '700': '#3E3E3E',
+    '800': '#2A2A2A',
+    '900': '#1A1A1A',
+  }}
+/>
+
+### Secondary Palette
+
+<ColorPalette
+  name="Secondary Colors"
+  colors={{
+    '100': '#EFE3F7',
+    '200': '#E2B8FA',
+    '300': '#CE89F7',
+    '400': '#AF49EB',
+    '500': '#8720C4',
+    '600': '#651693',
+    '700': '#471167',
+    '800': '#260A37',
+  }}
+/>
+
+<div style={{ 
+  padding: '16px', 
+  background: '#f0f9ff', 
+  borderRadius: '8px',
+  border: '1px solid #bae6fd',
+  marginTop: '24px'
+}}>
+  💡 <strong>Try it!</strong> Hover over any color swatch above to see its computed hover state in action.
+</div>
+
+---
+
+## 💻 Implementation
+
+### The `computeHoverColor` Function
+
+Here's how to implement the hover color computation:
+
+<Source
+  language="typescript"
+  dark
+  code={`import { mix } from 'polished';
+// or use 'color-blend' package
+// import { blend } from 'color-blend';
+
+type ColorPalette = {
+  [weight: string]: string;
+};
+
+/**
+ * Computes the hover color based on the active color and palette rules
+ * @param activeColor - The current active color (hex format)
+ * @param palette - The color palette object with weights as keys
+ * @param blendColor - Optional override for the blend color
+ * @returns The computed hover color (hex format)
+ */
+function computeHoverColor(
+  activeColor: string,
+  palette: ColorPalette,
+  blendColor?: string
+): string {
+  // Find the weight of the active color in the palette
+  const weights = Object.keys(palette)
+    .map(Number)
+    .sort((a, b) => a - b);
+  
+  const activeWeight = weights.find(
+    (weight) => palette[weight.toString()] === activeColor
+  );
+  
+  if (!activeWeight) {
+    throw new Error('Active color not found in palette');
+  }
+  
+  const currentIndex = weights.indexOf(activeWeight);
+  
+  // Handle override blend color
+  if (blendColor) {
+    return mix(0.5, activeColor, blendColor);
+  }
+  
+  // Apply the blending rules
+  if (activeWeight < 700) {
+    // Mix with next color
+    const nextWeight = weights[currentIndex + 1];
+    if (nextWeight) {
+      const nextColor = palette[nextWeight.toString()];
+      return mix(0.5, activeColor, nextColor);
+    }
+    return activeColor;
+  } else if (activeWeight >= 900) {
+    // Use previous color (no mix)
+    const prevWeight = weights[currentIndex - 1];
+    return prevWeight ? palette[prevWeight.toString()] : activeColor;
+  } else {
+    // Weight >= 700 and < 900: Mix with previous color
+    const prevWeight = weights[currentIndex - 1];
+    if (prevWeight) {
+      const prevColor = palette[prevWeight.toString()];
+      return mix(0.5, activeColor, prevColor);
+    }
+    return activeColor;
+  }
+}
+
+// Example usage:
+const greyPalette = {
+  100: '#F6F6F6',
+  200: '#EEEEEE',
+  300: '#E4E4E4',
+  400: '#D2D2D2',
+  500: '#B8B8B8',
+  600: '#909090',
+  700: '#3E3E3E',
+  800: '#2A2A2A',
+  900: '#1A1A1A',
+};
+
+const hoverColor = computeHoverColor('#B8B8B8', greyPalette);
+// Returns a 50/50 mix of #B8B8B8 and #909090`}
+/>
+
+### Dependencies
+
+Install the color mixing utility:
+
+<Source
+  language="bash"
+  dark
+  code={`# Using polished
+npm install polished
+
+# Or using color-blend
+npm install color-blend`}
+/>
+
+---
+
+## 🎯 Interactive Component Example
+
+export const HoverButton = ({ color, hoverColor, label }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <button
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        padding: '12px 24px',
+        backgroundColor: isHovered ? hoverColor : color,
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'background-color 0.3s ease, box-shadow 0.3s ease',
+        boxShadow: isHovered ? '0 4px 12px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.1)',
+      }}
+    >
+      {label}
+    </button>
+  );
+};
+
+<div style={{ 
+  display: 'flex', 
+  gap: '16px', 
+  flexWrap: 'wrap',
+  padding: '24px',
+  background: '#fafafa',
+  borderRadius: '12px',
+  marginBottom: '32px'
+}}>
+  <HoverButton 
+    color="#4485F1" 
+    hoverColor="#396FC8" 
+    label="Primary 500" 
+  />
+  <HoverButton 
+    color="#B8B8B8" 
+    hoverColor="#909090" 
+    label="Grey 500" 
+  />
+  <HoverButton 
+    color="#8720C4" 
+    hoverColor="#651693" 
+    label="Secondary 500" 
+  />
+  <HoverButton 
+    color="#285195" 
+    hoverColor="#1F3E73" 
+    label="Primary 700" 
+  />
+</div>
+
+### Component Code
+
+<Source
+  language="tsx"
+  dark
+  code={`import { computeHoverColor } from './utils/colors';
+
+interface ButtonProps {
+  color: string;
+  palette: ColorPalette;
+  children: React.ReactNode;
+}
+
+export const Button: React.FC<ButtonProps> = ({ 
+  color, 
+  palette, 
+  children 
+}) => {
+  const hoverColor = computeHoverColor(color, palette);
+  
+  return (
+    <button
+      style={{
+        backgroundColor: color,
+        '--hover-color': hoverColor,
+      } as React.CSSProperties}
+      className="button"
+    >
+      {children}
+    </button>
+  );
+};
+
+// CSS
+.button {
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: var(--hover-color);
+}`}
+/>
+
+---
+
+## 🚫 Disabled State
+
+The disabled state uses a simple, consistent approach across all components.
+
+### Default Approach
+
+<div style={{ 
+  padding: '24px', 
+  background: '#fafafa', 
+  borderRadius: '12px',
+  marginBottom: '24px'
+}}>
+  <h4 style={{ marginTop: 0 }}>50% Opacity</h4>
+  <p>Apply <code>opacity: 0.5</code> to the entire component in its disabled state.</p>
+  
+  <div style={{ display: 'flex', gap: '16px', marginTop: '16px', alignItems: 'center' }}>
+    <div
+      style={{
+        padding: '12px 24px',
+        backgroundColor: '#4485F1',
+        color: 'white',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: '600',
+      }}
+    >
+      Normal State
+    </div>
+    <div
+      style={{
+        padding: '12px 24px',
+        backgroundColor: '#4485F1',
+        color: 'white',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: '600',
+        opacity: 0.5,
+        cursor: 'not-allowed',
+      }}
+    >
+      Disabled State
+    </div>
+  </div>
+</div>
+
+### Exception Cases
+
+For specific components where the default opacity approach doesn't work well, use a **specific color provided by the design team**.
+
+### Implementation
+
+<Source
+  language="css"
+  dark
+  code={`/* Default disabled state */
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Exception: Custom disabled color */
+.button--custom:disabled {
+  opacity: 1;
+  background-color: var(--disabled-color);
+  color: var(--disabled-text-color);
+}`}
+/>
+
+---
+
+## 📚 Quick Reference
+
+<div style={{ 
+  display: 'grid', 
+  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+  gap: '16px',
+  marginTop: '24px'
+}}>
+  <div style={{ 
+    padding: '20px', 
+    background: 'white',
+    border: '1px solid #e0e0e0',
+    borderRadius: '12px',
+    color: '#333'
+  }}>
+    <h4 style={{ margin: '0 0 12px 0', color: '#1a1a1a' }}>Hover States</h4>
+    <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
+      <li>Weight-based blending</li>
+      <li>Automatic computation</li>
+      <li>Special cases handled</li>
+    </ul>
+  </div>
+  
+  <div style={{ 
+    padding: '20px', 
+    background: 'white',
+    border: '1px solid #e0e0e0',
+    borderRadius: '12px',
+    color: '#333'
+  }}>
+    <h4 style={{ margin: '0 0 12px 0', color: '#1a1a1a' }}>Disabled States</h4>
+    <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
+      <li>Default: 50% opacity</li>
+      <li>Exceptions: Custom color</li>
+      <li>Always not-allowed cursor</li>
+    </ul>
+  </div>
+  
+  <div style={{ 
+    padding: '20px', 
+    background: 'white',
+    border: '1px solid #e0e0e0',
+    borderRadius: '12px',
+    color: '#333'
+  }}>
+    <h4 style={{ margin: '0 0 12px 0', color: '#1a1a1a' }}>Implementation</h4>
+    <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
+      <li>Use computeHoverColor()</li>
+      <li>Install polished/color-blend</li>
+      <li>Pass palette + active color</li>
+    </ul>
+  </div>
+</div>
+
+---
+
+<div style={{ 
+  marginTop: '48px',
+  padding: '24px',
+  background: '#f0fdf4',
+  border: '2px solid #86efac',
+  borderRadius: '12px',
+  textAlign: 'center'
+}}>
+  <h3 style={{ margin: '0 0 12px 0', color: '#166534' }}>✨ Result</h3>
+  <p style={{ margin: 0, color: '#15803d' }}>
+    This systematic approach eliminates the need to specify hover and disabled colors in mockups and DSM,
+    while ensuring perfect consistency across your entire design system.
+  </p>
+</div>
