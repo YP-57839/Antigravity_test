@@ -1,21 +1,96 @@
+import { Meta, ColorPalette, ColorItem } from '@storybook/addon-docs/blocks';
+
+<Meta title="Prose UI/Test Colors" />
+
 # Test Colors
 
-<h1 id="heading-title-text">
-  Primary colors
-</h1>
+Our design system relies on a curated palette of colors to ensure consistency and accessibility across all interfaces. Below are the primary, secondary, and status colors used throughout the application.
 
-Our primary color palette is designed for use throughout our digital products within interfaces and for branding. Primary colors are displayed most frequently across our products' screens and components.
-
- 
-
-Primary colors are used for:
-
-- Key actions such as primary call to action buttons
-
-- Highlighted content
-
-- Form field elements
-
- 
-
-We chose colors that offer a range of uses and that meet or exceed standards in supporting accessibility and contrast for low vision users. The guidelines indicate how colors should be applied, noting where some should be utilized sparingly and with purpose for specific components like errors or messaging.
+<ColorPalette>
+  <ColorItem
+    title="Primary"
+    subtitle="Brand Colors"
+    colors={{
+      '100': '#EAEEF3',
+      '200': '#C9D7ED',
+      '300': '#98B8EE',
+      '400': '#72A1F1',
+      '500': '#4485F1',
+      '600': '#396FC8',
+      '700': '#285195',
+      '800': '#18315C',
+    }}
+  />
+  <ColorItem
+    title="Secondary"
+    subtitle="Brand Colors"
+    colors={{
+      '100': '#EFE3F7',
+      '200': '#E2B8FA',
+      '300': '#CE89F7',
+      '400': '#AF49EB',
+      '500': '#8720C4',
+      '600': '#651693',
+      '700': '#471167',
+      '800': '#260A37',
+    }}
+  />
+  <ColorItem
+    title="Grey"
+    subtitle="Neutral Colors"
+    colors={{
+      '50': '#F6F6F6',
+      '100': '#EEEEEE',
+      '200': '#E4E4E4',
+      '300': '#D2D2D2',
+      '400': '#B8B8B8',
+      '500': '#909090',
+      '600': '#676767',
+      '700': '#3E3E3E',
+      '800': '#2A2A2A',
+      '900': '#1A1A1A',
+    }}
+  />
+  <ColorItem
+    title="Warning"
+    subtitle="Status Colors"
+    colors={{
+      '100': '#FFF9ED',
+      '200': '#FFF1D7',
+      '300': '#FFE4AF',
+      '400': '#FFCF74',
+      '500': '#FFBB38',
+      '600': '#B38327',
+      '700': '#664B16',
+      '800': '#33250B',
+    }}
+  />
+  <ColorItem
+    title="Error"
+    subtitle="Status Colors"
+    colors={{
+      '100': '#FBE9E9',
+      '200': '#F9D0D0',
+      '300': '#F2A2A2',
+      '400': '#E95C5C',
+      '500': '#DF1616',
+      '600': '#9C0F0F',
+      '700': '#590909',
+      '800': '#2D0404',
+    }}
+  />
+  <ColorItem
+    title="Success"
+    subtitle="Status Colors"
+    colors={{
+      '100': '#EBF1ED',
+      '200': '#D5E7DA',
+      '300': '#A2D1AF',
+      '400': '#52C770',
+      '500': '#20C443',
+      '600': '#11832F',
+      '700': '#055720',
+      '800': '#00230C',
+    }}
+  />
+</ColorPalette>
